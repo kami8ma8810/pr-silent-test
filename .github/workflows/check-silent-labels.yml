@@ -1,0 +1,100 @@
+name: check-silent-labels
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
+
+    
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to check'
+        required: true
+        default: 'master'
+
+jobs:
+  check-silent-labels:
+    runs-on: ubuntu-latest
+    # git-pr-release によって作成された PR のみを対象とする
+    if: startsWith(github.event.pull_request.title, 'Production Release')
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Get PR commits
+        id: get-commits
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pulls = await github.rest.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            return JSON.stringify(pulls.data.map(commit => commit.sha));
+            
+      - name: Check for silent labels
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const commits = JSON.parse('${{ steps.get-commits.outputs.result }}');
+            let silentPRs = new Set();
+            
+            for (const commit of commits) {
+              const associated_pulls = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: commit
+              });
+              
+              for (const pr of associated_pulls.data) {
+                if (pr.number === context.issue.number) continue;
+                
+                const prDetails = await github.rest.pulls.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.number
+                });
+                
+                const hasSilent = prDetails.data.labels.some(label => 
+                  label.name === '🤫 silent'
+                );
+                
+                if (hasSilent) {
+                  silentPRs.add({
+                    number: pr.number,
+                    title: pr.title,
+                    url: pr.html_url
+                  });
+                }
+              }
+            }
+            
+            if (silentPRs.size > 0) {
+              const currentPR = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number
+              });
+              
+              let newBody = currentPR.data.body || '';
+              const silentSection = `${Array.from(silentPRs).map(pr => `- #${pr.number} ${pr.title}`).join('\n')}`;
+              
+              if (newBody.includes('## Silent PRs')) {
+                newBody = newBody.replace(/## Silent PRs[\s\S]*?(?=##|$)/, silentSection);
+              } else {
+                newBody += '\n' + silentSection;
+              }
+              
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                body: newBody
+              });
+            }

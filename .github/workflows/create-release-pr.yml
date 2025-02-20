@@ -5,6 +5,11 @@ on:
   push:
     branches:
       - dev
+
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   create-release-pr:
     runs-on: ubuntu-latest
@@ -16,11 +21,11 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.1
-      #      https://github.com/x-motemen/git-pr-release を使用して Pull Request を作成する
+      # https://github.com/x-motemen/git-pr-release を使用して Pull Request を作成する
       - name: Create a release pull request
         env:
           GIT_PR_RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GIT_PR_RELEASE_BRANCH_PRODUCTION: master
+          GIT_PR_RELEASE_BRANCH_PRODUCTION: main  # 実際のブランチ名に合わせる
           GIT_PR_RELEASE_BRANCH_STAGING: dev
           GIT_PR_RELEASE_TEMPLATE: .github/workflows/.git-pr-release-template
         run: |

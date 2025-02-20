@@ -81,16 +81,17 @@ jobs:
                 repo: context.repo.repo,
                 pull_number: context.issue.number
               });
-              
+          
               let newBody = currentPR.data.body || '';
-              const silentSection = `${Array.from(silentPRs).map(pr => `- #${pr.number}`).join('\n')}`;
-              
+              const silentPRsList = Array.from(silentPRs).map(pr => `- #${pr.number}`).join('\n');
+              const silentSection = `## Silent PRs\n${silentPRsList}`;
+
               if (newBody.includes('## Silent PRs')) {
-                newBody = newBody.replace(/## Silent PRs[\s\S]*?(?=##|$)/, silentSection);
+                newBody = newBody.replace(/## Silent PRs[\s\S]*?(?=##|$)/, `${silentSection}\n\n`);
               } else {
-                newBody += '\n' + silentSection;
+                newBody += `\n\n${silentSection}`;
               }
-              
+
               await github.rest.pulls.update({
                 owner: context.repo.owner,
                 repo: context.repo.repo,

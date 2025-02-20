@@ -30,4 +30,4 @@ jobs:
           GIT_PR_RELEASE_TEMPLATE: .github/workflows/.git-pr-release-template
         run: |
           gem install -N git-pr-release
-          git-pr-release --verbose  # 詳細ログを出力
+          git-pr-release

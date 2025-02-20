@@ -83,10 +83,10 @@ jobs:
               });
               
               let newBody = currentPR.data.body || '';
-              const silentSection = `${Array.from(silentPRs).map(pr => `- #${pr.number} ${pr.title}`).join('\n')}`;
+              const silentSection = `${Array.from(silentPRs).map(pr => `- #${pr.number}`).join('\n')}`;
               
-              if (newBody.includes('## Silent PRs')) {
-                newBody = newBody.replace(/## Silent PRs[\s\S]*?(?=##|$)/, silentSection);
+              if (newBody.includes('## サイレント')) {
+                newBody = newBody.replace(/## サイレント[\s\S]*?(?=##|$)/, silentSection);
               } else {
                 newBody += '\n' + silentSection;
               }

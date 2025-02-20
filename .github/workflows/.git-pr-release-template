@@ -1,10 +1,4 @@
 🎉 Production Release
-
 <% pull_requests.reject { |pr| pr.labels.any? { |label| label.name == '🤫 silent' } }.each do |pr| -%>
-- #<%=pr.to_hash[:data][:number]%>
-<% end -%>
-
-## Silent PRs
-<% pull_requests.select { |pr| pr.labels.any? { |label| label.name == '🤫 silent' } }.each do |pr| -%>
 - #<%=pr.to_hash[:data][:number]%>
 <% end -%>

@@ -1,11 +1,10 @@
 🎉 Production Release
 
-## リリース
 <% pull_requests.reject { |pr| pr.labels.any? { |label| label.name == '🤫 silent' } }.each do |pr| -%>
 - #<%=pr.to_hash[:data][:number]%>
 <% end -%>
 
-## サイレント
+## Silent PRs
 <% pull_requests.select { |pr| pr.labels.any? { |label| label.name == '🤫 silent' } }.each do |pr| -%>
 - #<%=pr.to_hash[:data][:number]%>
 <% end -%>

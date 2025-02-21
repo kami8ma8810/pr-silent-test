@@ -42,6 +42,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            const silent_section_title = '## Silent PRs';
             const commits = JSON.parse('${{ steps.get-commits.outputs.result }}');
             let silentPRs = new Set();
             
@@ -83,9 +84,9 @@ jobs:
               });
               
               let newBody = currentPR.data.body || '';
-              const silentSection = `${Array.from(silentPRs).map(pr => `- #${pr.number}`).join('\n')}`;
+              const silentSection = `${silent_section_title}\n${Array.from(silentPRs).map(pr => `- #${pr.number}`).join('\n')}`;
               
-              if (newBody.includes('## Silent PRs')) {
+              if (newBody.includes(silent_section_title)) {
                 newBody = newBody.replace(/## Silent PRs[\s\S]*?(?=##|$)/, silentSection);
               } else {
                 newBody += '\n' + silentSection;
